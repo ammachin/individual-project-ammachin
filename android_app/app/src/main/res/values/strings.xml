@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Localisation_Prototype</string>
+    <string name="app_bar_name">WiFi Scanner</string>
+    <string name="scan_button">Scan</string>
+</resources>
