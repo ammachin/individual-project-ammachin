@@ -6,4 +6,5 @@
     <string name="button_text">Confirm coordinates</string>
     <string name="instruction_2">Move to desired spot and then continue.</string>
     <string name="button_text_2">Confirm position</string>
+    <string name="get_readings">Get readings</string>
 </resources>

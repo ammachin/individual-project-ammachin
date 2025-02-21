@@ -1,5 +1,6 @@
 package com.unileeds.Android_App;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -50,6 +51,16 @@ public class MainActivity extends AppCompatActivity {
                 init_coords.y = Float.parseFloat(edit_y.getText().toString());
                 init_coords.z = Float.parseFloat(edit_z.getText().toString());
                 Log.d("Calibrate onClick", String.format("(%f, %f, %f)", init_coords.x, init_coords.y, init_coords.z));
+            }
+        });
+
+        Button readings_button = (Button) findViewById(R.id.readings_button);
+
+        readings_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, TrackPosition.class);
+                MainActivity.this.startActivity(intent);
             }
         });
 
