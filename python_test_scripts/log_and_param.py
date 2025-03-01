@@ -12,13 +12,13 @@ import time
 # CrazyFlie libraries
 import cflib.crtp # Scanning for CrazyFlie instances
 from cflib.crazyflie import Crazyflie
-from cflib.crazyflie.syncCrazyFlie import SyncCrazyFlie
+from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from cflib.utils import uri_helper
 from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie.syncLogger import SyncLogger
 
 # Radio uri of CrazyFlie for connection purposes
-uri = uri_helper.uri_from_env(default="radio://0/80/2M/E7E7E7E7E7") # TODO: checl what uri our Crazylie has
+uri = uri_helper.uri_from_env(default="radio://0/80/2M/E7E7E7E7E7")
 
 # Only show errors from Crazyflie logging
 logging.basicConfig(level=logging.ERROR)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     name = "estimator"
 
     # Create synchronous Crazyflie instance
-    with SyncCrazyFlie(uri, cf=Crazyflie(rw_cache="./cache")) as scf:
+    with SyncCrazyflie(uri, cf=Crazyflie(rw_cache="./cache")) as scf:
         connect_cf()
         #log_cf_async(scf, log_stabilizer)
-        param_async(group, name)
+        param_async(scf, group, name)
