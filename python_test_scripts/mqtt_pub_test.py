@@ -1,0 +1,14 @@
+import sys
+import paho.mqtt.client as mqtt
+
+client = mqtt.Client()
+
+# 1883 - default MQTT port
+# 60 - time alive (default)
+if client.connect("localhost", 1883, 60) != 0:
+    print("Unable to connect to MQTT broker")
+    sys.exit(1)
+
+client.publish("test_topic", "Test was successful!", 0)
+print("sent!") # For some reason, adding this print makes everything work?
+client.disconnect()

@@ -59,7 +59,10 @@ public class MainActivity extends AppCompatActivity {
         readings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, TrackPosition.class);
+//                Intent intent = new Intent(MainActivity.this, TrackPosition.class);
+//                MainActivity.this.startActivity(intent);
+
+                Intent intent = new Intent(MainActivity.this, StepCounter.class);
                 MainActivity.this.startActivity(intent);
             }
         });
