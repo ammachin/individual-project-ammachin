@@ -1,5 +1,6 @@
 package com.unileeds.Android_App;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +52,14 @@ public class MainActivity extends AppCompatActivity {
                 init_coords.y = Float.parseFloat(edit_y.getText().toString());
                 init_coords.z = Float.parseFloat(edit_z.getText().toString());
                 Log.d("Calibrate onClick", String.format("(%f, %f, %f)", init_coords.x, init_coords.y, init_coords.z));
+
+                // Let's just publish these coordinates for now as a MQTT test
+                String str = "(%f, %f, %f)";
+                // Default locale shouldn't give us any bugs, so can suppress lint
+                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.y, init_coords.z);
+
+                MQTTClient mqtt_client = new MQTTClient(getApplicationContext());
+                mqtt_client.publish(msg);
             }
         });
 

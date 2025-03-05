@@ -9,6 +9,6 @@ if client.connect("localhost", 1883, 60) != 0:
     print("Unable to connect to MQTT broker")
     sys.exit(1)
 
-client.publish("test_topic", "Test was successful!", 0)
+client.publish("phone_location", "Test was successful!", 0)
 print("sent!") # For some reason, adding this print makes everything work?
 client.disconnect()

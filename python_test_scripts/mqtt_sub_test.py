@@ -12,7 +12,7 @@ if client.connect(host="localhost", port=1883, keepalive=60) != 0:
     print("Unable to connect to MQTT broker")
     sys.exit(1)
 
-client.subscribe("test_topic")
+client.subscribe("phone_location")
 
 # blocking call - continuously receive messages
 client.loop_forever()
