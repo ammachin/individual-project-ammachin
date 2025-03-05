@@ -12,7 +12,9 @@ import logging
 import numpy as np
 import sys
 import time
+import math
 from threading import Event
+from datetime import datetime
 
 import cflib.crtp
 from cflib.crazyflie import Crazyflie
@@ -85,6 +87,38 @@ def take_off(cf, position):
         time.sleep(sleep_time)
 
 
+def hover(cf, hover_time):
+    sleep_time = 0.1
+    steps = int(hover_time / sleep_time)
+    for i in range(steps):
+        cf.commander.send_hover_setpoint(0.0, 0.0, 0.0, 0.5)
+        time.sleep(sleep_time)
+
+
+def land(cf, position):
+    land_time = 1.0
+    sleep_time = 0.1
+
+    change = position_estimate[2]
+    while(position_estimate[2] > 0.2):
+        time.sleep(sleep_time)
+        cf.commander.send_hover_setpoint(0.0, 0.0, 0.0, 0.0)
+        time.sleep(sleep_time)
+        cf.commander.send_position_setpoint(position_estimate[0], position_estimate[1], change, 0.0)
+        change = change - 0.1
+
+        print(f"Position (2nd stage): ({position_estimate[0], position_estimate[1], position_estimate[2]})")
+
+def go_to(cf, pos):
+    dist = math.sqrt(((pos[0]-position_estimate[0]) ** 2) + ((pos[1] - position_estimate[1]) ** 2))
+    sleep_time = 0.1
+    steps = int(dist * 0.5 * sleep_time)
+
+    for i in range(50): # try this- maybe will fly at a reasonnable pace ?
+        print(f"Position (1st stage): ({position_estimate[0], position_estimate[1], position_estimate[2]})")
+        cf.commander.send_position_setpoint(pos[0], pos[1], pos[2], 0.0)
+        time.sleep(0.1)
+
 """
 Send setpoints to the CrazyFlie.
 
@@ -101,18 +135,12 @@ def fly_trajectory(scf, final_pos, yaw):
     time.sleep(1.0)
 
     take_off(scf.cf, final_pos)
+    #hover(scf.cf, 5)
 
-    print(f"Position: ({final_pos[0], final_pos[1], final_pos[2]})")
-    for i in range(50): # why 50??
-        print(f"Position (1st stage): ({position_estimate[0], position_estimate[1], position_estimate[2]})")
-        scf.cf.commander.send_position_setpoint(final_pos[0], final_pos[1], final_pos[2], 0.0)
-        time.sleep(0.1)
+    go_to(scf.cf, final_pos)
 
-    print("Landing")
-    for i in range(50):
-        print(f"Position (Second stage): ({position_estimate[0], position_estimate[1], position_estimate[2]})")
-        scf.cf.commander.send_position_setpoint(final_pos[0], final_pos[1], 0.15, 0.0)
-        time.sleep(0.1)
+    hover(scf.cf, 5)
+    land(scf.cf, position_estimate[2])
 
     print(f"Position: ({position_estimate[0], position_estimate[1], position_estimate[2]})")
 
@@ -170,10 +198,10 @@ if __name__ == "__main__":
             final_pos[pos] = float(final_pos[pos])
 
         # We don't actually care about z for now
-        final_pos[2] = 2.0
+        final_pos[2] = 0.5
 
         # check which yaw we need
-        yaw = calculate_yaw((position_estimate[0], 2.0, position_estimate[2]),
+        yaw = calculate_yaw((position_estimate[0], position_estimate[1], position_estimate[2]),
                       (final_pos[0], final_pos[1], final_pos[2]))
 
         fly_trajectory(scf, final_pos, yaw[0])
