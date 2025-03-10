@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 //                Intent intent = new Intent(MainActivity.this, TrackPosition.class);
 //                MainActivity.this.startActivity(intent);
 
-                Intent intent = new Intent(MainActivity.this, StepCounter.class);
+                Intent intent = new Intent(MainActivity.this, CalculateOrientation.class);
                 MainActivity.this.startActivity(intent);
             }
         });

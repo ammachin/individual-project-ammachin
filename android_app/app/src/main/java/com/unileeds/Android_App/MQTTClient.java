@@ -23,9 +23,9 @@ public class MQTTClient {
         broker = "tcp://192.168.0.22:1883";
         client_id = "android";
 
-        // Trying again ughhhhh
         client = new MqttAndroidClient(context, broker, client_id, Ack.AUTO_ACK, null, true, 0);
         client.setCallback(new MqttCallbackExtended() {
+            // All debug messages
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
                 Log.d("Mqtt Callback", "Connect complete");
