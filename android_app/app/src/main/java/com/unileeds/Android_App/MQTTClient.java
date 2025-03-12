@@ -18,6 +18,7 @@ public class MQTTClient {
     MqttConnectOptions options = new MqttConnectOptions();
     String broker;
     String client_id;
+    String topic = "phone_location";
 
     public MQTTClient(Context context) {
         broker = "tcp://192.168.0.22:1883";
@@ -52,8 +53,6 @@ public class MQTTClient {
     }
 
     public void publish(String msg) {
-        String topic = "phone_location";
-
         // Connecting is asynchronous, so we need to implement a callback
         client.connect(options, null, new IMqttActionListener() {
             @Override
@@ -78,8 +77,6 @@ public class MQTTClient {
                 Log.d("Connection Failure", exception.toString());
             }
         });
-
-
     }
 
     public void close()  {
