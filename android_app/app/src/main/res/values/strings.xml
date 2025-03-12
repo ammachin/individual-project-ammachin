@@ -1,10 +1,8 @@
 <resources>
-    <string name="app_name">Localisation_Prototype</string>
-    <string name="app_bar_name">WiFi Scanner</string>
     <string name="scan_button">Scan</string>
     <string name="instruction_1">Please input known current location:</string>
-    <string name="button_text">Confirm coordinates</string>
-    <string name="instruction_2">Move to desired spot and then continue.</string>
-    <string name="button_text_2">Confirm position</string>
-    <string name="get_readings">Get readings</string>
+    <string name="button_text">Send</string>
+    <string name="get_readings">Perform PDR</string>
+    <string name="Start">Start</string>
+    <string name="Stop">Stop</string>
 </resources>

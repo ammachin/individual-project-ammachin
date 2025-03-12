@@ -1,6 +1,8 @@
 package com.unileeds.Android_App;
 
-public class Vector3D {
+import java.io.Serializable;
+
+public class Vector3D implements Serializable {
     float x;
     float y;
     float z;

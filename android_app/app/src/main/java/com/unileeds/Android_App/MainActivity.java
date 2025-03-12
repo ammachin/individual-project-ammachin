@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 init_coords.z = Float.parseFloat(edit_z.getText().toString());
                 Log.d("Calibrate onClick", String.format("(%f, %f, %f)", init_coords.x, init_coords.y, init_coords.z));
 
-                // Let's just publish these coordinates for now as a MQTT test
+                // Publish coordinates on MQTT topic
                 String str = "(%f, %f, %f)";
                 // Default locale shouldn't give us any bugs, so can suppress lint
                 @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.y, init_coords.z);
@@ -69,6 +69,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, PDR.class);
+                init_coords.x = Float.parseFloat(edit_x.getText().toString());
+                init_coords.y = Float.parseFloat(edit_y.getText().toString());
+                init_coords.z = Float.parseFloat(edit_z.getText().toString());
+
+                // Bundle init_coords so we can pass custom object to new activity
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("init_coords", init_coords);
+                intent.putExtras(bundle);
                 MainActivity.this.startActivity(intent);
             }
         });

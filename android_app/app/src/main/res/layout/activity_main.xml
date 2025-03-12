@@ -58,34 +58,14 @@
         android:text="@string/button_text"
         android:id="@+id/calibrate_button"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="150dp"
-        android:text="@string/instruction_2"
-        android:visibility="invisible"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="180dp"
-        android:text="@string/button_text_2"
-        android:visibility="invisible"/>
-
     <Button
         android:id="@+id/readings_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="220dp"
+        android:layout_marginStart="120dp"
+        android:layout_marginTop="90dp"
         android:text="@string/get_readings"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

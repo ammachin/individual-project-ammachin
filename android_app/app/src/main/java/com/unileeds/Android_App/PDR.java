@@ -1,5 +1,6 @@
 package com.unileeds.Android_App;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -9,6 +10,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,6 +21,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import org.w3c.dom.Text;
+
+import java.util.Objects;
 
 public class PDR extends AppCompatActivity implements SensorEventListener {
     private SensorManager sensorManager;
@@ -44,7 +52,7 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
     private double current_azimuth = 0.0f;
 
     private Vector3D init_coords;
-    private Vector3D final_coords;
+    private Vector3D final_coords = new Vector3D();
 
     // For permissions
     private ActivityResultLauncher<String> requestPermissionLauncher =
@@ -65,6 +73,7 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
 
         // Get intent from previous activity
         Intent intent = getIntent();
+        init_coords = (Vector3D) Objects.requireNonNull(intent.getExtras()).getSerializable("init_coords");
 
         // Locked so that screen rotation doesn't affect any calculations
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -74,8 +83,86 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
 
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        steps = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        steps = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
+        // Get UI buttons / text views
+        TextView coords_view = (TextView) findViewById(R.id.init_coords);
+        Button orientation_button = (Button) findViewById(R.id.orientation_button);
+        Button distance_button = (Button) findViewById(R.id.distance_button);
+        TextView distance_text = (TextView) findViewById(R.id.distance_text);
+        Button send_button = (Button) findViewById(R.id.send_new_button);
+        TextView send_text = (TextView) findViewById(R.id.send_text);
+
+        String str = "(%f, %f, %f)";
+        // Default locale shouldn't give us any bugs, so can suppress lint
+        @SuppressLint("DefaultLocale") String coords = String.format(str, init_coords.x, init_coords.y, init_coords.z);
+        coords_view.setText(coords);
+
+        // Listen for button clicks
+        orientation_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(orientation_button.getText().toString().equals(getString(R.string.Start))) {
+                    orientation_button.setText(R.string.Stop);
+                    is_orientation_stage = true;
+                    is_distance_stage = false;
+                }
+                else if(orientation_button.getText().toString().equals(getString(R.string.Stop))) {
+                    orientation_button.setText(R.string.Start);
+                    is_orientation_stage = false;
+                    is_distance_stage = false;
+                    distance_button.setVisibility(View.VISIBLE);
+                    distance_text.setVisibility(View.VISIBLE);
+                }
+                else {
+                    // Something has gone wrong
+                    Log.e("Orientation button", "Unexpected value: " + orientation_button.getText());
+                }
+            }
+        });
+
+        distance_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(distance_button.getText().toString().equals(getString(R.string.Start))) {
+                    distance_button.setText(R.string.Stop);
+                    is_orientation_stage = false;
+                    is_distance_stage = true;
+                    steps_data = 0.0f;
+                }
+                else if(distance_button.getText().toString().equals(getString(R.string.Stop))) {
+                    distance_button.setText(R.string.Start);
+                    is_orientation_stage = false;
+                    is_distance_stage = false;
+                    send_button.setVisibility(View.VISIBLE);
+                    send_text.setVisibility(View.VISIBLE);
+
+                    calculateFinalCoords();
+
+                    String str = "New coordinates: (%f, %f, %f)";
+                    // Default locale shouldn't give us any bugs, so can suppress lint
+                    @SuppressLint("DefaultLocale") String new_text = String.format(str, final_coords.x, final_coords.y, final_coords.z);
+                    send_text.setText(new_text);
+                }
+                else {
+                    // Something has gone wrong
+                    Log.e("Distance button", "Unexpected value: " + distance_button.getText());
+                }
+            }
+        });
+
+        send_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Publish coordinates on MQTT topic
+                String str = "(%f, %f, %f)";
+                // Default locale shouldn't give us any bugs, so can suppress lint
+                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.y, init_coords.z);
+
+                MQTTClient mqtt_client = new MQTTClient(getApplicationContext());
+                mqtt_client.publish(msg);
+            }
+        });
     }
 
     private void calculateAzimuth() {
@@ -108,7 +195,7 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
     private void calculateDistance() {
         // Using a constant for step length based off of my own step length
         // to simplify the problem
-        float step_length = 52.88f;
+        float step_length = 0.5288f;
         distance_travelled += steps_data * step_length;
     }
 
@@ -130,25 +217,32 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
 
         // Create rotation matrix around the z-axis
         // In rows
-        Vector3D[] rotation_matrix = new Vector3D[3];
+        // TODO: tidy this up
+        Vector3D rotation_matrix_0 = new Vector3D();
+        Vector3D rotation_matrix_1 = new Vector3D();
+        Vector3D rotation_matrix_2 = new Vector3D();
 
-        rotation_matrix[0].x = (float) Math.cos(angle);
-        rotation_matrix[0].y = (float) -Math.sin(angle);
-        rotation_matrix[0].z = 0.0f;
+        rotation_matrix_0.x = (float) Math.cos(angle);
+        rotation_matrix_0.y = (float) -Math.sin(angle);
+        rotation_matrix_0.z = 0.0f;
 
-        rotation_matrix[1].x = (float) Math.sin(angle);
-        rotation_matrix[1].y = (float) Math.cos(angle);
-        rotation_matrix[1].z = 0.0f;
+        rotation_matrix_1.x = (float) Math.sin(angle);
+        rotation_matrix_1.y = (float) Math.cos(angle);
+        rotation_matrix_1.z = 0.0f;
 
-        rotation_matrix[1].x = 0.0f;
-        rotation_matrix[1].y = 0.0f;
-        rotation_matrix[1].z = 1.0f;
+        rotation_matrix_2.x = 0.0f;
+        rotation_matrix_2.y = 0.0f;
+        rotation_matrix_2.z = 1.0f;
 
         // Apply rotation matrix to init_coords
         // Just doing this manually for now
-        final_coords.x = ((rotation_matrix[0].x * init_coords.x) + (rotation_matrix[0].y * init_coords.y) + (rotation_matrix[0].z * init_coords.z));
-        final_coords.y = ((rotation_matrix[1].x * init_coords.x) + (rotation_matrix[1].y * init_coords.y) + (rotation_matrix[1].z * init_coords.z));
-        final_coords.z = ((rotation_matrix[2].x * init_coords.x) + (rotation_matrix[2].y * init_coords.y) + (rotation_matrix[2].z * init_coords.z));
+        final_coords.x = ((rotation_matrix_0.x * init_coords.x) + (rotation_matrix_0.y * init_coords.y) + (rotation_matrix_0.z * init_coords.z));
+        final_coords.y = ((rotation_matrix_1.x * init_coords.x) + (rotation_matrix_1.y * init_coords.y) + (rotation_matrix_1.z * init_coords.z));
+        final_coords.z = ((rotation_matrix_2.x * init_coords.x) + (rotation_matrix_2.y * init_coords.y) + (rotation_matrix_2.z * init_coords.z));
+
+        Log.d("Check", Float.toString(final_coords.x));
+        Log.d("Check", Float.toString(distance_travelled));
+        Log.d("Check", Float.toString(unit.x));
 
         // Apply distance to final_coords
         final_coords.x = final_coords.x * distance_travelled * unit.x;
@@ -188,27 +282,30 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
         int type = event.sensor.getType();
 
         if(type == Sensor.TYPE_ACCELEROMETER) {
-            // Copy data
-            accelerometer_data = event.values.clone();
-
             if(is_orientation_stage) {
+                // Copy data
+                accelerometer_data = event.values.clone();
+
                 calculateAzimuth();
+                Log.d("Accelerometer", "Calculating azimuth");
             }
         }
         else if(type == Sensor.TYPE_MAGNETIC_FIELD) {
-            // Copy data
-            magnetometer_data = event.values.clone();
-
             if(is_orientation_stage) {
+                // Copy data
+                magnetometer_data = event.values.clone();
+
                 calculateAzimuth();
+                Log.d("Magnetometer", "Calculating azimuth");
             }
         }
-        else if(type == Sensor.TYPE_STEP_COUNTER) {
-            // Copy data
-            steps_data = event.values[0];
-
+        else if(type == Sensor.TYPE_STEP_DETECTOR) {
             if(is_distance_stage) {
+                // Copy data
+                steps_data++;
+
                 calculateDistance();
+                Log.d("Step counter", "Calculating distance");
             }
         }
     }
