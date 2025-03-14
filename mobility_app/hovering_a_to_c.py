@@ -35,7 +35,7 @@ if __name__ == "__main__":
         print("Incorrect arguments")
         sys.exit(1)
 
-    location_b = []
+    location_b = [None] * 3
     location_b[0], location_b[1], location_b[2] = map(float, point_b.current_msg.strip('()').split(','))
 
     mobility = MobilityClass()
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
         # Assuming that when we get to here location will have been found
         print("Location received!")
-        location_c = []
+        location_c = [None] * 3
         location_c[0], location_c[1], location_c[2] = map(float, mqtt_sub.current_msg.strip('()').split(','))
 
         # Arm the CrazyFlie

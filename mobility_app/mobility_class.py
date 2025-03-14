@@ -25,7 +25,6 @@ class MobilityClass:
     Intialising class.
     """
     def __init__(self):
-        super.__init__()
         cflib.crtp.init_drivers()
 
     """
@@ -126,3 +125,4 @@ class MobilityClass:
         print(f"Intiating go-to sequence: Flying to ({position[0]}, {position[1]}, {position[2]})")
         for i in range(50):
             cf.commander.send_position_setpoint(position[0], position[1], position[2], 0.0)
+            time.sleep(sleep_time)

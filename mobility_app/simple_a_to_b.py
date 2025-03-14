@@ -30,8 +30,11 @@ if __name__ == "__main__":
 
         # Assuming that when we get to here location will have been found
         print("Location received!")
-        location = []
+        location = [None] * 3
         location[0], location[1], location[2] = map(float, mqtt_sub.current_msg.strip('()').split(','))
+
+        # Set z to something speciifc for now
+        location[2] = 0.5
 
         # Arm the CrazyFlie
         scf.cf.platform.send_arming_request(True)
