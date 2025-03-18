@@ -8,7 +8,7 @@ def on_message(client, data, msg):#
 client = mqtt.Client()
 client.on_message = on_message
 
-if client.connect(host="localhost", port=1883, keepalive=60) != 0:
+if client.connect(host="10.42.0.158", port=1883, keepalive=60) != 0:
     print("Unable to connect to MQTT broker")
     sys.exit(1)
 

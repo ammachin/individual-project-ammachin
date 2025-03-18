@@ -21,7 +21,7 @@ public class MQTTClient {
     String topic = "phone_location";
 
     public MQTTClient(Context context) {
-        broker = "tcp://192.168.0.22:1883";
+        broker = "tcp://10.42.0.158:1883";
         client_id = "android";
 
         client = new MqttAndroidClient(context, broker, client_id, Ack.AUTO_ACK, null, true, 0);

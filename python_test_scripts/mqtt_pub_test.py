@@ -5,7 +5,7 @@ client = mqtt.Client()
 
 # 1883 - default MQTT port
 # 60 - time alive (default)
-if client.connect("localhost", 1883, 60) != 0:
+if client.connect("10.42.0.158", 1883, 60) != 0:
     print("Unable to connect to MQTT broker")
     sys.exit(1)
 
