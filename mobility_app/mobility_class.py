@@ -28,17 +28,6 @@ class MobilityClass:
         cflib.crtp.init_drivers()
 
     """
-    Callback for finding current CrazyFlie position.
-    """
-    def log_pos_callback(self, timestamp, data, log_conf):
-        self.position_estimate[0] = data["kalman.stateX"]
-        self.position_estimate[1] = data["kalman.stateY"]
-        self.position_estimate[2] = data["kalman.stateZ"]
-
-        if(__debug__):
-            print(f"Position: ({self.position_estimate[0]}, {self.position_estimate[1]}, {self.position_estimate[2]})")
-
-    """
     Callback to see if Loco Positioning Deck is attached.
     """
     def param_deck_loco(self, _, value_str):
@@ -53,6 +42,16 @@ class MobilityClass:
             print("Deck is not attached")
 
     """
+    Callback for finding current CrazyFlie position.
+    """
+    def log_pos_callback(self, timestamp, data, log_conf):
+        self.position_estimate[0] = data["kalman.stateX"]
+        self.position_estimate[1] = data["kalman.stateY"]
+        self.position_estimate[2] = data["kalman.stateZ"]
+
+        #print(f"Position: ({self.position_estimate[0]}, {self.position_estimate[1]}, {self.position_estimate[2]})")
+
+    """
     Initiate the logging of CrazyFlie position coordinates
     """
     def init_log_config(self, scf: SyncCrazyflie):
@@ -63,6 +62,7 @@ class MobilityClass:
 
         scf.cf.log.add_config(log_conf)
         log_conf.data_received_cb.add_callback(self.log_pos_callback)
+        log_conf.start()
 
     """
     Take-off function
@@ -116,11 +116,7 @@ class MobilityClass:
     """
     def go_to(self, scf: SyncCrazyflie, position):
         cf = scf.cf
-        
-        # need to see whether we can do something better than just sending 50 times
-        dist = math.sqrt(((position[0] - self.position_estimate[0]) ** 2) + ((position[1] - self.position_estimate[1]) ** 2) + ((position[2] - self.position_estimate[2]) ** 2))
         sleep_time = 0.1
-        steps = int(dist * 0.5 * sleep_time)
 
         print(f"Intiating go-to sequence: Flying to ({position[0]}, {position[1]}, {position[2]})")
         for i in range(50):

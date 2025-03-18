@@ -36,7 +36,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     location_b = [None] * 3
-    location_b[0], location_b[1], location_b[2] = map(float, point_b.current_msg.strip('()').split(','))
+    location_b[0], location_b[1], location_b[2] = map(float, point_b.strip('()').split(','))
 
     mobility = MobilityClass()
     mqtt_sub = MQTTSub()
