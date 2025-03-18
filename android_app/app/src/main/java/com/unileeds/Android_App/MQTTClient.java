@@ -61,7 +61,7 @@ public class MQTTClient {
                 MqttMessage mqtt_msg = new MqttMessage();
                 mqtt_msg.setPayload(msg.getBytes());
                 mqtt_msg.setQos(1);
-                mqtt_msg.setRetained(true); // We want there to be a fallback option
+                mqtt_msg.setRetained(false); // We don't want the last location to be used before a new one is sent
                 client.publish(topic, mqtt_msg);
                 Log.d("MQTT", "Msg published");
                 client.disconnect();
