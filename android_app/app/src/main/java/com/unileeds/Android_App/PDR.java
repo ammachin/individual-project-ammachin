@@ -157,7 +157,8 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
                 // Publish coordinates on MQTT topic
                 String str = "(%f, %f, %f)";
                 // Default locale shouldn't give us any bugs, so can suppress lint
-                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.y, init_coords.z);
+                // Flip axis here to match the CrazyFlie axis
+                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.z, init_coords.y);
 
                 MQTTClient mqtt_client = new MQTTClient(getApplicationContext());
                 mqtt_client.publish(msg);
@@ -178,7 +179,13 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
             SensorManager.getOrientation(rotation_matrix, orientation_angles);
         }
 
+        // I would be surprised if azimuth is ever exactly 0.0f, so
+        if(init_azimuth == 0.0f) {
+            init_azimuth = orientation_angles[0];
+        }
+
         current_azimuth = orientation_angles[0];
+
         // Azimuth is in the range -Pi to Pi,
         // Which can lead to some big jumps, so let's try to remove that
         if(prev_azimuth != 0.0f) {
@@ -196,58 +203,16 @@ public class PDR extends AppCompatActivity implements SensorEventListener {
         // Using a constant for step length based off of my own step length
         // to simplify the problem
         float step_length = 0.5288f;
-        distance_travelled += steps_data * step_length;
-    }
-
-    private Vector3D calculateUnitVector(Vector3D v) {
-        Vector3D unit = new Vector3D();
-        double magnitude = Math.sqrt((Math.pow(v.x, 2)) + (Math.pow(v.y, 2)) + (Math.pow(v.z, 2)));
-
-        unit.x = (float) (v.x / magnitude);
-        unit.y = (float) (v.y / magnitude);
-        unit.z = (float) (v.z / magnitude);
-        return unit;
+        distance_travelled = steps_data * step_length;
     }
 
     private void calculateFinalCoords() {
-        // TODO: should probably change Vector3D to doubles instead
-        Vector3D unit = calculateUnitVector(init_coords);
-
         double angle = current_azimuth - init_azimuth;
 
-        // Create rotation matrix around the z-axis
-        // In rows
-        // TODO: tidy this up
-        Vector3D rotation_matrix_0 = new Vector3D();
-        Vector3D rotation_matrix_1 = new Vector3D();
-        Vector3D rotation_matrix_2 = new Vector3D();
-
-        rotation_matrix_0.x = (float) Math.cos(angle);
-        rotation_matrix_0.y = (float) -Math.sin(angle);
-        rotation_matrix_0.z = 0.0f;
-
-        rotation_matrix_1.x = (float) Math.sin(angle);
-        rotation_matrix_1.y = (float) Math.cos(angle);
-        rotation_matrix_1.z = 0.0f;
-
-        rotation_matrix_2.x = 0.0f;
-        rotation_matrix_2.y = 0.0f;
-        rotation_matrix_2.z = 1.0f;
-
-        // Apply rotation matrix to init_coords
-        // Just doing this manually for now
-        final_coords.x = ((rotation_matrix_0.x * init_coords.x) + (rotation_matrix_0.y * init_coords.y) + (rotation_matrix_0.z * init_coords.z));
-        final_coords.y = ((rotation_matrix_1.x * init_coords.x) + (rotation_matrix_1.y * init_coords.y) + (rotation_matrix_1.z * init_coords.z));
-        final_coords.z = ((rotation_matrix_2.x * init_coords.x) + (rotation_matrix_2.y * init_coords.y) + (rotation_matrix_2.z * init_coords.z));
-
-        Log.d("Check", Float.toString(final_coords.x));
-        Log.d("Check", Float.toString(distance_travelled));
-        Log.d("Check", Float.toString(unit.x));
-
         // Apply distance to final_coords
-        final_coords.x = final_coords.x * distance_travelled * unit.x;
-        final_coords.y = final_coords.y * distance_travelled * unit.y;
-        final_coords.z = final_coords.z * distance_travelled * unit.z;
+        final_coords.x =  init_coords.x + (distance_travelled * (float) Math.cos(angle));
+        final_coords.y = init_coords.y;
+        final_coords.z = init_coords.z + (-distance_travelled * (float) Math.sin(angle)); // flip axis
     }
 
     @Override
