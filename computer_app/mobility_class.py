@@ -65,6 +65,40 @@ class MobilityClass:
         log_conf.start()
 
     """
+    Check to see whether the drone flight path is within the drone test area.
+    """
+    def check_pos(self, position):
+        # Check x
+        min_x = 0.2
+        max_x = 6.6
+
+        if(position[0] < min_x):
+            position[0] = min_x
+        elif(position[0] > max_x):
+            position[0] = max_x
+
+        # Check y
+        min_y = 0.2
+        max_y = 3.6
+
+        if(position[1] < min_y):
+            position[1] = min_y
+        elif(position[1] > max_y):
+            position[1] = max_y
+
+        # Check z
+        min_z = 0.1
+        max_z = 3.7
+
+        if(position[2] < min_z):
+            position[2] = min_z
+        if(position[2] > max_z):
+            position[2] = max_z
+
+        return position
+
+
+    """
     Take-off function
     """
     def take_off(self, scf: SyncCrazyflie, position):
@@ -73,13 +107,22 @@ class MobilityClass:
         take_off_time = 1.0
         sleep_time = 0.1
         steps = int(take_off_time / sleep_time)
-        vel = position[2] / take_off_time
+
+        if(position[2] <= 1.0):
+            vel = position[2] / take_off_time
+        else:
+            vel = 1.0 / take_off_time
 
         print(f"Take off at {position[2]}")
 
         for i in range(steps):
             cf.commander.send_velocity_world_setpoint(0, 0, vel, 0)
             time.sleep(sleep_time)
+
+        if(position[2] > 1.0):
+            for i in range(steps):
+                cf.commander.send_position_setpoint(self.position_estimate[0], self.position_estimate[1], position[2], 0.0)
+                time.sleep(sleep_time)
 
     """
     Hover function.

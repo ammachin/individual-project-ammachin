@@ -33,9 +33,6 @@ if __name__ == "__main__":
         location = [None] * 3
         location[0], location[1], location[2] = map(float, mqtt_sub.current_msg.strip('()').split(','))
 
-        # Set z to something speciifc for now
-        location[2] = 0.5
-
         # Arm the CrazyFlie
         scf.cf.platform.send_arming_request(True)
         time.sleep(1.0)

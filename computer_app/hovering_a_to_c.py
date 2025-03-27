@@ -56,6 +56,10 @@ if __name__ == "__main__":
         location_c = [None] * 3
         location_c[0], location_c[1], location_c[2] = map(float, mqtt_sub.current_msg.strip('()').split(','))
 
+        # Check coordinates are within test boundary
+        location_b = mobility.check_pos(location_b)
+        location_c = mobility.check_pos(location_c)
+
         # Arm the CrazyFlie
         scf.cf.platform.send_arming_request(True)
         time.sleep(1.0)

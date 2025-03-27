@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 // Publish coordinates on MQTT topic
                 String str = "(%f, %f, %f)";
                 // Default locale shouldn't give us any bugs, so can suppress lint
-                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.y, init_coords.z);
+                @SuppressLint("DefaultLocale") String msg = String.format(str, init_coords.x, init_coords.z, init_coords.y);
 
                 MQTTClient mqtt_client = new MQTTClient(getApplicationContext());
                 mqtt_client.publish(msg);
